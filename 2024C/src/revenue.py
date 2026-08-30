@@ -273,6 +273,134 @@ class RevenueModel:
         E -= C
         return E
 
+    # ---------- 问题3：可替代/互补性 + 相关蒙特卡洛 ----------
+
+    # 互补需求对（一起购买 → 销量正相关）：家常搭配/冬季炖菜等
+    COMP_PAIRS = [
+        (20, 21, 0.25),   # 土豆↔西红柿
+        (21, 22, 0.30),   # 西红柿↔茄子（家常配菜）
+        (24, 31, 0.30),   # 青椒↔辣椒（辣味配菜）
+        (29, 30, 0.25),   # 黄瓜↔生菜（凉拌组合）
+        (35, 36, 0.30),   # 大白菜↔白萝卜（冬季炖菜）
+        (35, 37, 0.30),   # 大白菜↔红萝卜
+    ]
+
+    def _sub_pairs(self):
+        """可替代需求对（二选一购买 → 销量负相关），避开互补对。"""
+        com = {(a, b) for a, b, _ in self.COMP_PAIRS} | {(b, a) for a, b, _ in self.COMP_PAIRS}
+        pairs = []
+
+        def group(g, mag):
+            g = sorted(set(g))
+            for i in range(len(g)):
+                for j in range(i + 1, len(g)):
+                    if (g[i], g[j]) not in com:
+                        pairs.append((g[i], g[j], mag))
+
+        for b in range(1, 6):                    # 小麦/玉米 ↔ 豆类(1..5) 主粮-蛋白互替
+            pairs.append((6, b, 0.20)); pairs.append((7, b, 0.20))
+        pairs.append((6, 7, 0.40))               # 小麦↔玉米（主粮互替）
+        pairs.append((6, 16, 0.20))              # 小麦↔水稻（主食互替）
+        group((8, 9, 10, 15), 0.20)              # 杂粮：谷子/高粱/黍子/大麦
+        group((20, 21, 22, 24, 29, 31), 0.25)    # 果菜
+        group((23, 27, 28, 30, 32, 33, 34), 0.25)  # 叶菜
+        group((17, 18, 19), 0.25)                # 豆类蔬菜：豇豆/刀豆/芸豆
+        group((38, 39, 40, 41), 0.20)            # 食用菌
+        pairs.append((36, 37, 0.30))             # 白萝卜↔红萝卜
+        return pairs
+
+    def corr_matrix(self):
+        """问题3 相关矩阵 R（3m×3m，m=41：每作物 {销量 d, 价格 p, 成本 c}）。
+        块内 ρ_dp=0.4、ρ_dc=0.3、ρ_pc=0.2；块间 ρ_dd：可替代<0、互补>0（_sub_pairs/COMP_PAIRS）。
+        返回 PSD 修正后的相关矩阵（对角线=1），供 Cholesky 采样。"""
+        if getattr(self, '_R', None) is not None:
+            return self._R
+        m = len(self.crops)
+        R = np.eye(3 * m)
+        for j in range(m):
+            d, p, c = 3 * j, 3 * j + 1, 3 * j + 2
+            R[d, p] = R[p, d] = 0.40
+            R[d, c] = R[c, d] = 0.30
+            R[p, c] = R[c, p] = 0.20
+        for a, b, rho in self.COMP_PAIRS:
+            R[3 * (a - 1), 3 * (b - 1)] = R[3 * (b - 1), 3 * (a - 1)] = rho
+        for a, b, mag in self._sub_pairs():
+            R[3 * (a - 1), 3 * (b - 1)] = R[3 * (b - 1), 3 * (a - 1)] = -mag
+        w, V = np.linalg.eigh(R)                 # PSD 修正（负特征值钳制 + 对角归一）
+        w = np.clip(w, 1e-8, None)
+        R2 = (V * w) @ V.T
+        dg = np.sqrt(np.diag(R2))
+        self._R = R2 / np.outer(dg, dg)
+        return self._R
+
+    def price_range_p3(self):
+        """问题3 价格波动区间（%/100）：粮食±2%（基本稳定）、蔬菜+3~+7%（年增5%左右）、
+        食用菌−5~−1%、羊肚菌确定性−5%。"""
+        m = len(self.crops)
+        lo = np.full(m, -2.0); hi = np.full(m, 2.0)
+        lo[16:37] = 3.0; hi[16:37] = 7.0        # 蔬菜 编号17..37（jc 16..36）
+        lo[37:40] = -5.0; hi[37:40] = -1.0      # 食用菌 38..40（jc 37..39）
+        lo[40] = hi[40] = -5.0                  # 羊肚菌 41（jc 40）确定性
+        return lo / 100.0, hi / 100.0
+
+    def mc_samples(self, year, N=2000, R=None, seed=0):
+        """第 year 年 N 组相关冲击样本（CRN：固定 seed → 同一年内所有个体共用同一组样本）。
+        3m 维变量 (d,p,c) 由 R 相关（R=None 独立），3σ=区间半宽 截断正态、clamp 到区间；
+        q 独立 ±10%。返回 dict {xiq, xid, xip, xic} 各 (N, m)。"""
+        rng = np.random.default_rng(seed)
+        m = len(self.crops)
+        dlo, dhi = self.wave_sales[:, 0] / 100.0, self.wave_sales[:, 1] / 100.0
+        plo, phi = self.price_range_p3()
+        clo = np.full(m, -0.02); chi = np.full(m, 0.02)   # 成本波动 ±2%
+        lo = np.concatenate([dlo, plo, clo]); hi = np.concatenate([dhi, phi, chi])
+        mu = 0.5 * (lo + hi); sig = (hi - lo) / 6.0
+        z0 = rng.standard_normal((N, 3 * m))
+        if R is None:
+            z = mu + sig * z0
+        else:
+            S = R * sig[:, None] * sig[None, :]
+            w, V = np.linalg.eigh(S)      # S=V diag(w) V^T；w 钳制保半正定 → L = V·√w
+            w = np.clip(w, 1e-10, None)
+            L = V * np.sqrt(w)
+            z = mu + z0 @ L.T
+        z = np.clip(z, lo, hi)
+        qlo, qhi = -0.10, 0.10
+        xiq = np.clip((qhi - qlo) / 6.0 * rng.standard_normal((N, m)), qlo, qhi)
+        return {'xiq': xiq, 'xid': z[:, :m], 'xip': z[:, m:2 * m], 'xic': z[:, 2 * m:]}
+
+    def profit_mc(self, x, year, mode=1, N=2000, R=None, seed=0, samples=None):
+        """问题3 期望收益（MC 模拟，"通过模拟数据进行求解"）：返回 N 个情景收益 π_n（元），
+        期望 mean(π)、风险 std/CVaR 由调用方统计。
+        - 销量因子：麦玉 (1+ξ_d)^τ 复合增长、其余 (1+ξ_d)；
+        - 价格因子 fp=(1+ξ_p)^τ（羊肚菌确定性 −5%）；成本 c·1.05^τ·(1+ξ_c)；
+        - 产量 (1+ξ_q) 独立；滞销统一式 ψ(r)=r+κ(1−r)（κ=0/0.5 ↔ mode=1/2）。
+        samples 给定则复用（CRN），否则按 (N, R, seed) 现采。"""
+        u = year - 2023
+        X = self.to_ts(x)
+        Yb = (self.q * X).sum(axis=0)                     # [m] 基准产量
+        PX = (self.p * self.q * X).sum(axis=0)            # [m] 基准产值
+        Cj = (self.c * X).sum(axis=0)                     # [m] 作物级成本
+        with np.errstate(divide='ignore', invalid='ignore'):
+            A = np.where(Yb > 0, self.sales0 / Yb, 0.0)
+        kappa = 0.5 if mode == 2 else 0.0
+        grow = np.zeros(len(self.crops), dtype=bool)
+        grow[list(self.crop_idx[j] for j in GROW_SALES)] = True
+        if samples is None:
+            samples = self.mc_samples(year, N, R, seed)
+        xiq, xid, xip, xic = (samples['xiq'], samples['xid'], samples['xip'], samples['xic'])
+        fq = 1.0 + xiq                                     # (N,m) 产量因子
+        fd = np.where(grow[None, :], (1.0 + xid) ** u, 1.0 + xid)   # 销量因子
+        fp = (1.0 + xip) ** u                              # 价格因子
+        Dt = self.sales0[None, :] * fd                     # (N,m) 情景销量
+        prod = Yb[None, :] * fq                            # (N,m) 情景总产
+        with np.errstate(divide='ignore', invalid='ignore'):
+            r = np.minimum(1.0, np.where(prod > 0, Dt / prod, 1.0))
+        psi = r + kappa * (1.0 - r)                        # 产值系数统一式
+        gross = PX[None, :] * fp * fq                      # (N,m) 情景产值
+        rev = (gross * psi).sum(axis=1)                    # (N,)
+        cost = (Cj[None, :] * (1.0 + xic) * (1.05 ** u)).sum(axis=1)
+        return rev - cost                                  # (N,) 情景收益
+
 
 if __name__ == '__main__':
     # 冒烟验证：还原 2023 实际种植 → 2023 收益基线 + 2024 情景期望（四种分布）

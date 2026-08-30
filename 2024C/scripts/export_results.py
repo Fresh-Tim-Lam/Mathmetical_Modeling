@@ -77,19 +77,18 @@ if __name__ == '__main__':
     # 问题1 两情形：加载全量权重 DE 求解器保存的最终方案（见 src/de_solver_full.py __main__）
     scenarios = []
     for mode in (1, 2):
-        with open(f'{OUT}/de_plan_full_mode{mode}.pkl', 'rb') as f:
+        with open(f'{OUT}/de_plan_full_p1_mode{mode}.pkl', 'rb') as f:
             plan = pickle.load(f)
         # 检查优先：fitness 先过规则检查器（2023 固定基线），违规即 raise
         fit = FullDE(seed=0).fitness(plan, problem=1, mode=mode, base=base)
         scenarios.append((plan, f'result1_{mode}.xlsx'))
         print(f'问题1 mode={mode}（全量权重 DE 方案）: {fit / 1e4:.2f} 万\n')
 
-    de = FullDE(seed=0)
-    plan, fit = de.solve(baseline=base, problem=2, mode=1, dist='normal',
-                         seed=0, n_quad=16)
-    de.report(plan, mode=1)
+    with open(f'{OUT}/de_plan_full_p2_mode1.pkl', 'rb') as f:
+        plan = pickle.load(f)
+    fit = FullDE(seed=0).fitness(plan, problem=2, mode=1, base=base)
     scenarios.append((plan, 'result2.xlsx'))
-    print(f'问题2 normal: {fit / 1e4:.2f} 万\n')
+    print(f'问题2 normal（加载全量 DE 方案）: {fit / 1e4:.2f} 万\n')
 
     for plan, name in scenarios:
         fill_workbook(f'{DOCS}/{name}', f'{OUT}/{name}', plan)

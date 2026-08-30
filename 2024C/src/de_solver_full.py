@@ -92,6 +92,11 @@ class FullDE:
                 self.blocks.append((p, s, sup, off))
                 off += len(sup)
         self.D = off                                # 1062
+        # 问题3 MC 状态：N/seed/R（相关矩阵）+ 按年样本缓存（CRN：同年内全部个体共用）
+        self.mc_N = 2000
+        self.mc_seed = 0
+        self.mc_R = None
+        self.mc_cache = {}
 
     # ---------- 边际（贪心构造 / 候选排序共用） ----------
     def _margin_table(self):
@@ -430,14 +435,26 @@ class FullDE:
 
         F_t(v) = Π_t( decode(v) ) − P_t(v)
 
-        其中 Π_t 为当年真实收益（问题1 确定性 / 问题2 期望，revenue.py，不改动），
+        其中 Π_t 为当年真实收益（问题1 确定性 / 问题2 期望 / 问题3 MC 期望，revenue.py，不改动），
         P_t 为虚拟罚项（_virtual_penalty，含编码/重茬/闭合窗口缺豆/稀疏四类）。
         该目标只决定 DE 个体优劣与搜索方向（求解器引导层）；
         最终结果 = 硬校验通过后的真实收益（solve/fitness 末尾，纯收益、无罚项）。"""
         x = self.sm.derive(plan_y)
-        profit = (self.rev.profit_det(x, mode) if problem == 1
-                  else self.rev.profit_stoch(x, y, dist, mode, n_quad))
+        if problem == 1:
+            profit = self.rev.profit_det(x, mode)
+        elif problem == 3:
+            # 问题3：MC 期望（SAA，"通过模拟数据求解"），同年内全部个体共用同一组 CRN 样本
+            profit = float(self.rev.profit_mc(x, y, mode, N=self.mc_N, R=self.mc_R,
+                                              samples=self._mc_samples(y)).mean())
+        else:
+            profit = self.rev.profit_stoch(x, y, dist, mode, n_quad)
         return profit - self._virtual_penalty(plan_y, y, prev_sets, prev2_sets)
+
+    def _mc_samples(self, y):
+        """第 y 年 MC 情景样本缓存（CRN：固定 seed → 同一年内所有 DE 个体共用同一组样本）。"""
+        if y not in self.mc_cache:
+            self.mc_cache[y] = self.rev.mc_samples(y, N=self.mc_N, R=self.mc_R, seed=self.mc_seed)
+        return self.mc_cache[y]
 
     # ---------- 单年 DE ----------
     def _need_bean_plots(self, y, prev_sets, prev2_sets):
@@ -653,6 +670,9 @@ class FullDE:
         x = self.sm.derive(plan[y])
         if problem == 1:
             return self.rev.profit_det(x, mode)
+        if problem == 3:
+            return float(self.rev.profit_mc(x, y, mode, N=self.mc_N, R=self.mc_R,
+                                            samples=self._mc_samples(y)).mean())
         return self.rev.profit_stoch(x, y, dist=dist, mode=mode, n_quad=n_quad)
 
     def fitness(self, plan, problem=1, mode=1, dist='normal', n_quad=40, base=None):
@@ -661,14 +681,20 @@ class FullDE:
         self.rc.raise_if_invalid(plan, base=base)
         return sum(self._profit(plan, y, problem, mode, dist, n_quad) for y in YEARS)
 
-    def report(self, plan, mode=1):
+    def report(self, plan, mode=1, problem=1):
         """输出年度收益、约束违规与利用面积（调用前需已通过规则检查）。"""
         for y in YEARS:
             x = self.sm.derive(plan[y])
             area = sum(self.sm.unit_area[u] for u in {u for u, _ in x})
-            det = self.rev.profit_det(x, mode) / 1e4
-            stoch = self.rev.profit_stoch(x, y, dist='normal', mode=mode) / 1e4
-            print(f'{y}: 确定性 {det:.2f} 万  期望 {stoch:.2f} 万  面积 {area:.1f} 亩')
+            if problem == 3:
+                pi = self.rev.profit_mc(x, y, mode, N=self.mc_N, R=self.mc_R,
+                                        samples=self._mc_samples(y))
+                print(f'{y}: MC 期望 {pi.mean()/1e4:.2f} 万  标准差 {pi.std()/1e4:.2f} 万'
+                      f'  面积 {area:.1f} 亩')
+            else:
+                det = self.rev.profit_det(x, mode) / 1e4
+                stoch = self.rev.profit_stoch(x, y, dist='normal', mode=mode) / 1e4
+                print(f'{y}: 确定性 {det:.2f} 万  期望 {stoch:.2f} 万  面积 {area:.1f} 亩')
         n1 = sum(len(self.rc.replant_violations(self.rc.crop_sets(plan[t - 1]),
                                                 self.rc.crop_sets(plan[t])))
                  for t in range(2024, 2031))
@@ -677,16 +703,24 @@ class FullDE:
 
     # ---------- 主流程 ----------
     def solve(self, baseline=None, problem=1, mode=1, dist='normal',
-              n_quad=40, seed=None, npop=NP, ngen=G, verbose=True, k2_warm=False):
+              n_quad=40, seed=None, npop=NP, ngen=G, verbose=True, k2_warm=False,
+              mc_N=2000, mc_seed=0):
         """逐年级进 DE 求解 2024~2030。返回 (plan, fit)。
         最终收益计算前先做规则检查（2023 固定基线），违规收集并 raise。
 
         k2_warm=True：每年先用 K=2 槽位 DE（_k2_warm，296 维低维空间）搜索得到结构化
         好解，再 _encode 为全量 1062 维权重向量作为当年全量 DE 的热启动（"K=2 热启动 +
-        全量编码"路线，见 _k2_warm 动机注记）。"""
+        全量编码"路线，见 _k2_warm 动机注记）。
+
+        problem=3：用 MC 期望（SAA）作适应度；mc_N 情景数、mc_seed 样本种子（CRN），
+        相关矩阵 R = corr_matrix()（替代/互补 + D↔p↔c 块内相关），按年缓存样本。"""
         if seed is not None:
             self.seed = seed
             self.rng = random.Random(self.seed)
+        self.mc_N = mc_N
+        self.mc_seed = mc_seed
+        self.mc_R = self.rev.corr_matrix() if problem == 3 else None
+        self.mc_cache = {}
         plan = {2023: baseline or {}}
         base_cs = self.rc.crop_sets(plan[2023])     # 冻结 2023（p2 与复核口径一致）
         greedy = {}
@@ -748,14 +782,17 @@ if __name__ == '__main__':
     warm = bool(int(sys.argv[4])) if len(sys.argv) > 4 else False
     problem = int(sys.argv[5]) if len(sys.argv) > 5 else 1
     n_quad = int(sys.argv[6]) if len(sys.argv) > 6 else 16
+    mc_N = int(sys.argv[7]) if len(sys.argv) > 7 else 2000
+    mc_seed = int(sys.argv[8]) if len(sys.argv) > 8 else 0
     base = load_2023_baseline()
 
-    print(f'全量分配编码变量数 D = {FullDE().D}   K=2 热启动 = {warm}   问题 = {problem}   n_quad={n_quad}')
+    print(f'全量分配编码变量数 D = {FullDE().D}   K=2 热启动 = {warm}   问题 = {problem}'
+          f'   n_quad={n_quad}   mc_N={mc_N}')
     de = FullDE(seed=0)
     plan, fit = de.solve(baseline=base, problem=problem, mode=mode, npop=npop, ngen=ngen,
-                         k2_warm=warm, n_quad=n_quad)
+                         k2_warm=warm, n_quad=n_quad, mc_N=mc_N, mc_seed=mc_seed)
     print(f'\nFullDE 问题{problem} mode{mode} 总适应度 = {fit/1e4:.2f} 万元')
-    de.report(plan, mode=mode)
+    de.report(plan, mode=mode, problem=problem)
     # 检查优先兜底：收益已算，但方案必须通过检查器（违规即 raise）
     de.rc.raise_if_invalid(integrate({y: plan[y] for y in YEARS}, base=base), base=base)
     print(f'规则检查（{npop}×{ngen}，K2预热={warm}）：全部通过 ✓，方案已保存')
