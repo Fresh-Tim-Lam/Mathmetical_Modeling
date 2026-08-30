@@ -22,6 +22,7 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{array}
+\usepackage{longtable}
 \usepackage{listings}
 \usepackage{hyperref}
 \hypersetup{
@@ -160,14 +161,18 @@
 % ============================================================
 \section{符号说明}
 
-\begin{table}[H]
-\centering
-\caption{主要符号说明}
-\label{tab:symbol}
-\begin{tabular}{p{3cm}p{8cm}p{2cm}}
+\begin{longtable}{p{3cm}p{8cm}p{2cm}}
+\caption{主要符号说明}\label{tab:symbol}\\
 \toprule
 符号 & 说明 & 单位\\
 \midrule
+\endfirsthead
+\toprule
+符号 & 说明 & 单位\\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
 $p$ & 物理地块编号 & --\\
 $s$ & 季次（1或2） & --\\
 $j$ & 作物编号（1--41） & --\\
@@ -180,14 +185,14 @@ $\mathcal{D}$ & 解码映射：权重向量$v\to$面积系数$\alpha$（修复�
 $F_t(v)$ & 第$t$年虚拟收益（DE搜索层适应度） & 元\\
 $P_t(v)$ & 虚拟罚项（仅引导搜索方向，不进入真实收益） & 元\\
 $\alpha_{p,s,j}$ & 面积系数（解码后），$\sum_j\alpha_{p,s,j}\le1$ & --\\
-$q_{u,j}$ & 决策单元$u$种植作物$j$的亩产量（"地块--作物"档位取值） & kg/亩\\
+$q_{u,j}$ & 决策单元$u$种植作物$j$的亩产量（"地块--作物"档位取值） & 斤/亩\\
 $c_{u,j}$ & 单元$u$种植作物$j$的单位面积种植成本（"地块--作物"档位取值） & 元/亩\\
-$p_{u,j}$ & 单元$u$种植作物$j$的销售价格（"地块--作物"档位取值） & 元/kg\\
-$D_j$ & 作物$j$的预期销售量 & kg\\
+$p_{u,j}$ & 单元$u$种植作物$j$的销售价格（"地块--作物"档位取值） & 元/斤\\
+$D_j$ & 作物$j$的预期销售量 & 斤\\
 $u$ & 决策单元（由物理地块$p$与季次$s$展开） & --\\
 $A_u$ & 决策单元$u$的面积 & 亩\\
 $x_{t,u,j}$ & 第$t$年单元$u$上作物$j$的实际种植面积 & 亩\\
-$Y_{t,j}$ & 第$t$年作物$j$的总产量，$Y_{t,j}=\sum_{u}q_{u,j}x_{t,u,j}$ & kg\\
+$Y_{t,j}$ & 第$t$年作物$j$的总产量，$Y_{t,j}=\sum_{u}q_{u,j}x_{t,u,j}$ & 斤\\
 $G_{t,j}$ & 第$t$年作物$j$的总产值，$G_{t,j}=\sum_{u}p_{u,j}q_{u,j}x_{t,u,j}$（各档位单价分别计入） & 元\\
 $C_{t,j}$ & 第$t$年作物$j$的总成本，$C_{t,j}=\sum_{u}c_{u,j}x_{t,u,j}$ & 元\\
 $r_{t,j}$ & 第$t$年作物$j$的结算比例，$r_{t,j}=\min\{1,D_j/Y_{t,j}\}$（各档位按产量比例同比例售出） & --\\
@@ -203,9 +208,22 @@ $\Pi_t$ & 第$t$年的总收益 & 元\\
 $\mathbb{E}[\Pi_t]$ & 第$t$年收益的数学期望 & 元\\
 $\mathcal{J}_{p,s}$ & 地块$p$第$s$季的可种作物集合 & --\\
 $\mathcal{B}$ & 豆类作物集合 & --\\
+$\boldsymbol{\xi}$ & 问题3随机冲击向量，$\boldsymbol{\xi}=(\xi^d,\xi^p,\xi^c)\in\mathbb{R}^{123}$（按作物分块） & --\\
+$\boldsymbol{\mu},\boldsymbol{\sigma},\boldsymbol{\Sigma}$ & 多元正态均值向量、标准差向量、协方差矩阵（问题3），$\boldsymbol{\Sigma}=\mathrm{diag}(\boldsymbol{\sigma})\mathbf{R}\,\mathrm{diag}(\boldsymbol{\sigma})$ & --\\
+$\Pi_n(x)$ & 情景$n$下方案$x$的7年总收益（问题3） & 元\\
+$\hat{\mathbb{E}}[\Pi]$ & 期望收益的样本估计（SAA），$\hat{\mathbb{E}}[\Pi]=\frac1N\sum_{n=1}^{N}\Pi_n(x)$ & 元\\
+$N$ & 蒙特卡洛情景样本数（搜索层2000、评估层20000） & --\\
+$\lambda_1,\lambda_2,\lambda_3,\lambda_4$ & 虚拟罚项系数（$10^6,10^6,10^6,50$元/作物$\cdot$季） & --\\
+$n^{\mathrm{enc}}_t,n^{\mathrm{re}}_t,n^{\mathrm{bean}}_t,n^{\mathrm{crops}}_t$ & 第$t$年编码违规数、重茬违规茬次数、闭合窗口缺豆地块数、选中作物季数（虚拟罚项计数） & --\\
+$S_{t,k}$ & 第$t$年第$k$茬的作物集合（不重茬约束） & --\\
+$f^q_j,f^d_j,f^p_j$ & 作物$j$亩产量、销量、价格波动的概率密度函数（问题2） & --\\
+$\Omega_j$ & 作物$j$的积分域，$[lo^q_j,hi^q_j]\times[lo^d_j,hi^d_j]\times[lo^p_j,hi^p_j]$ & --\\
+$\tilde r_{t,j}$ & 问题2随机结算比例，$\tilde r_{t,j}=\min\{1,\tilde D_{t,j}/\tilde Y_{t,j}\}$ & --\\
+$\tilde r_{t,j,n}$ & 情景$n$下结算比例，$\tilde r_{t,j,n}=\min\{1,\tilde D_{t,j,n}/\tilde Y_{t,j,n}\}$ & --\\
+$n_{\mathrm{quad}}$ & 高斯--勒让德求积阶数（问题2，$n_{\mathrm{quad}}$=16已收敛） & --\\
+$\mathrm{CVaR}_{5\%}$ & 5\%条件风险价值（最坏5\%情景的平均收益） & 元\\
 \bottomrule
-\end{tabular}
-\end{table}
+\end{longtable}
 
 % ============================================================
 % 五、模型建立与求解
@@ -591,9 +609,9 @@ R_{3(a-1)+1,\,3(b-1)+1}=R_{3(b-1)+1,\,3(a-1)+1}=\rho_{ab}
 由图\ref{fig:p1_vs_p2}可知，问题2（随机性）的7年期望收益合计3994.55万元，略高于问题1情形1（确定性、超量滞销）的3929.28万元（+1.7\%）。这一差异源于价格随机化的凸性效应：$E[(1+\xi^p)^{\tau}]>(1+E\xi^p)^{\tau}$（$\tau\ge1$时复合增长为凸函数），使期望收入略高于确定性基准。值得注意的是，两种框架下的年度收益变化趋势高度一致，均在2028年出现小幅回调后于2029--2030年回升，表明年度间的结构性差异（如作物轮作周期）是影响收益走势的主要因素，而非随机波动本身。
 
 % ============================================================
-% 六、灵敏度分析
+% 六、结果分析
 % ============================================================
-\section{灵敏度分析}
+\section{结果分析}
 
 \subsection{约束可行性验证}
 
