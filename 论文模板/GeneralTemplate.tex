@@ -1,0 +1,331 @@
+% !TEX program = xelatex
+\documentclass[a4paper,12pt]{article}
+
+% ==================== 中文支持 ====================
+\usepackage[UTF8]{ctex}
+
+% ==================== 页面设置 ====================
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+% ==================== 数学公式 ====================
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{bm}
+
+% ==================== 图表 ====================
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{caption}
+\captionsetup{labelsep=quad}
+
+% ==================== 表格 ====================
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{booktabs}
+\usepackage{longtable}
+
+% ==================== 代码 ====================
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+	basicstyle=\small\ttfamily,
+	breaklines=true,
+	frame=single,
+	numbers=left,
+	numberstyle=\tiny,
+	keywordstyle=\color{blue},
+	commentstyle=\color{green!60!black},
+	stringstyle=\color{red},
+	showstringspaces=false
+}
+
+% ==================== 其他 ====================
+\usepackage{hyperref}
+\usepackage{indentfirst}
+\setlength{\parindent}{2em}
+
+
+% ==================== 标题格式（x.x.x 格式） ====================
+\usepackage{titlesec}
+
+% 一级标题：1、2、3、...
+\titleformat{\section}{\centering\Large\bfseries}{\zhnum{section}、}{0.5em}{}
+
+% 二级标题：1.1、1.2、...
+\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.5em}{}
+
+% 三级标题：1.1.1、1.1.2、...
+\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.5em}{}
+
+% 四级标题：（1）（2）（3）...
+\titleformat{\paragraph}{\normalsize\bfseries}{（\arabic{paragraph}）}{0.5em}{}
+
+
+
+% ==================== 正文开始 ====================
+\begin{document}
+	
+	% ==================== 摘要 ====================
+	\setcounter{page}{1}
+	\begin{center}
+		{\LARGE\bfseries 基于[模型名称]的[问题名称]研究} \\[0.8cm]
+		{\large 摘要} \\[0.3cm]
+	\end{center}
+	
+	\noindent [研究背景简述]。本文针对[问题情境]建立了数学模型进行分析。\\[0.3cm]
+	
+	\noindent \textbf{针对问题一}，[方法简述]，得到[结论]。\\[0.3cm]
+	
+	\noindent \textbf{针对问题二}，[方法简述]，得到[结论]。\\[0.3cm]
+	
+	\noindent \textbf{针对问题三}，[方法简述]，得到[结论]。\\[0.3cm]
+	
+	\noindent \textbf{针对问题四}，[方法简述]，得到[结论]。\\[0.3cm]
+	
+	\noindent 最后，对模型进行了评价与推广。\\[0.3cm]
+	
+	\noindent \textbf{关键词：} [关键词1]；[关键词2]；[关键词3]；[关键词4]
+	
+	\newpage
+	
+	% ==================== 一、问题重述 ====================
+	\section{问题重述}
+	
+	\subsection{问题背景}
+	[内容]
+	
+	\subsection{问题要求}
+	\textbf{问题一：} [描述]\\
+	\textbf{问题二：} [描述]\\
+	\textbf{问题三：} [描述]\\
+	\textbf{问题四：} [描述]
+	
+	\newpage
+	
+	% ==================== 二、问题分析 ====================
+	\section{问题分析}
+	
+	\subsection{问题一的分析}
+	[内容]
+	
+	\subsection{问题二的分析}
+	[内容]
+	
+	\subsection{问题三的分析}
+	[内容]
+	
+	\subsection{问题四的分析}
+	[内容]
+	
+	\newpage
+	
+	% ==================== 三、模型假设 ====================
+	\section{模型假设}
+	
+	\begin{enumerate}
+		\item 假设[内容]。
+		\item 假设[内容]。
+		\item 假设[内容]。
+	\end{enumerate}
+	
+	\newpage
+	
+	% ==================== 四、符号说明 ====================
+	\section{符号说明}
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{c|c|c}
+			\hline
+			\textbf{符号} & \textbf{含义} & \textbf{单位} \\
+			\hline
+			$x_i$ & [含义] & [单位] \\
+			$P_i$ & [含义] & [单位] \\
+			$S_{ij}$ & [含义] & [单位] \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\newpage
+	
+	% ==================== 五、数据侧写 ====================
+	\section{数据侧写}
+	
+	\subsection{[维度一]}
+	[内容]，如图1所示。
+	
+	\begin{figure}[H]
+		\centering
+		\includegraphics[width=0.7\textwidth]{example-image}
+		\caption{[图标题]}
+		\label{fig:1}
+	\end{figure}
+	
+	由图1可知，[结论]。
+	
+	\newpage
+	
+	% ==================== 六、模型的建立与求解 ====================
+	\section{模型的建立与求解}
+	
+	% ----------------------------------------------
+	% 问题一
+	% ----------------------------------------------
+	\subsection{问题一模型的建立与求解}
+	
+	\subsubsection{数据预处理}
+	[内容]
+	
+	\subsubsection{模型建立}
+	
+	% 三级标题：1、2、3、...
+	\paragraph{（1）决策变量的确定}
+	[内容]
+	
+	\paragraph{（2）目标函数的确定}
+	[公式]
+	
+	\paragraph{（3）约束条件的设定}
+	[公式]
+	
+	\subsubsection{模型求解}
+	
+	\paragraph{（1）求解方法}
+	[内容]
+	
+	\paragraph{（2）求解结果}
+	[表格/图表]
+	
+	\subsubsection{结果分析}
+	[内容]
+	
+	% ----------------------------------------------
+	% 问题二
+	% ----------------------------------------------
+	\subsection{问题二模型的建立与求解}
+	
+	\subsubsection{模型建立}
+	
+	\paragraph{（1）不确定性因素分析}
+	[内容]
+	
+	\paragraph{（2）目标函数的修正}
+	[公式]
+	
+	\paragraph{（3）约束条件的补充}
+	[公式]
+	
+	\subsubsection{模型求解}
+	
+	\paragraph{（1）求解算法}
+	[内容]
+	
+	\paragraph{（2）求解结果}
+	[表格/图表]
+	
+	\subsubsection{结果分析}
+	[内容]
+	
+	% ----------------------------------------------
+	% 问题三
+	% ----------------------------------------------
+	\subsection{问题三模型的建立与求解}
+	
+	\subsubsection{模型建立}
+	[内容]
+	
+	\subsubsection{模型求解}
+	[内容]
+	
+	\subsubsection{结果分析}
+	[内容]
+	
+	% ----------------------------------------------
+	% 问题四
+	% ----------------------------------------------
+	\subsection{问题四模型的建立与求解}
+	
+	\subsubsection{模型建立}
+	[内容]
+	
+	\subsubsection{模型求解}
+	[内容]
+	
+	\subsubsection{结果分析}
+	[内容]
+	
+	\newpage
+	
+	% ==================== 七、AI工具使用声明 ====================
+	\section*{AI工具使用声明}
+	
+	% 二选一：
+	
+	% 选项一：未使用
+	本参赛队在竞赛过程中未使用任何AI工具。
+	
+	% 选项二：使用了（删除选项一，启用此项）
+	% 本参赛队在竞赛过程中使用了AI工具，主要用于[简要用途]，详细使用情况见支撑材料。
+	
+	\vspace{1cm}
+	\noindent 参赛队成员签名：\hspace{3cm} 日期：\hspace{3cm}
+	
+	\newpage
+	
+	% ==================== 八、参考文献 ====================
+	\section{参考文献}
+	
+	\begin{enumerate}
+		\item 作者1，作者2. 论文题目[J]. 期刊名称，年份，卷号(期号)：页码-页码.
+		\item 作者. 学位论文题目[D]. 学校名称，年份.
+		\item 作者. 书籍题目[M]. 出版社，年份.
+	\end{enumerate}
+	
+	\newpage
+	
+	% ==================== 九、模型的评价与推广 ====================
+	\section{模型的评价与推广}
+	
+	\subsection{模型的优点}
+	\begin{enumerate}
+		\item [优点1]
+		\item [优点2]
+	\end{enumerate}
+	
+	\subsection{模型的缺点}
+	\begin{enumerate}
+		\item [缺点1]
+		\item [缺点2]
+	\end{enumerate}
+	
+	\subsection{模型的推广}
+	[内容]
+	
+	\newpage
+	
+	% ==================== 十、附录 ====================
+	\section{附录}
+	
+	\subsection{支撑材料文件列表}
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{c|c}
+			\hline
+			\textbf{文件分类} & \textbf{文件内容} \\
+			\hline
+			问题一 & [文件列表] \\
+			问题二 & [文件列表] \\
+			问题三 & [文件列表] \\
+			问题四 & [文件列表] \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\subsection{核心代码}
+	\begin{lstlisting}[language=Matlab, basicstyle=\small\ttfamily, caption=核心算法代码]
+		% [代码内容]
+	\end{lstlisting}
+	
+\end{document}

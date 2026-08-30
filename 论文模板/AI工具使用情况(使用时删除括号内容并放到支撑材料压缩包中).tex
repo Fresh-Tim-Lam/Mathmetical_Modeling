@@ -1,0 +1,120 @@
+% 这是一个独立的PDF文件，编译后放入支撑材料压缩包
+% 注意：这个文件是单独的，不包含在主论文中
+
+\documentclass[a4paper,12pt]{article}
+\usepackage[UTF8]{ctex}
+\usepackage{geometry}
+\geometry{left=2.5cm,right=2.5cm,top=2.5cm,bottom=2.5cm}
+
+\begin{document}
+	
+	\begin{center}
+		{\LARGE\bfseries AI工具使用详情说明} \\[0.5cm]
+	\end{center}
+	
+	\section*{一、所用AI工具名称、版本或型号}
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{c|c|c}
+			\hline
+			\textbf{工具名称} & \textbf{版本/型号} & \textbf{提供商} \\
+			\hline
+			[工具名称1] & [版本号] & [提供商名称] \\
+			[工具名称2] & [版本号] & [提供商名称] \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\section*{二、具体使用目的和环节}
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{c|c|c}
+			\hline
+			\textbf{工具名称} & \textbf{使用目的} & \textbf{使用环节} \\
+			\hline
+			[工具名称1] & 语言润色与表达优化 & 论文撰写阶段 \\
+			[工具名称2] & 代码调试辅助 & 模型求解阶段 \\
+			[工具名称3] & LaTeX排版辅助 & 论文排版阶段 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\section*{三、主要提示方式与使用过程说明}
+	
+	\subsection*{（1）语言润色}
+	
+	\textbf{典型提示词示例：}
+	
+	\begin{verbatim}
+		请对以下学术论文段落进行语言润色，使其表达更加简洁、严谨，
+		符合数学建模竞赛论文的写作风格：
+		
+		[原文段落]
+	\end{verbatim}
+	
+	\textbf{使用过程：} 将论文草稿中的部分段落输入AI工具，获取润色建议后，由参赛队成员逐句审查，选择性采纳合理的表达改进。
+	
+	\subsection*{（2）代码调试辅助}
+	
+	\textbf{典型提示词示例：}
+	
+	\begin{verbatim}
+		以下MATLAB代码运行时报错“Index exceeds matrix dimensions”，
+		请帮我定位问题并给出修改建议：
+		
+		[代码片段]
+	\end{verbatim}
+	
+	\textbf{使用过程：} 将出现错误的代码片段输入AI工具，获取错误定位和修改建议后，由参赛队成员理解原理后手动修改代码。
+	
+	\subsection*{（3）LaTeX排版辅助}
+	
+	\textbf{典型提示词示例：}
+	
+	\begin{verbatim}
+		请帮我将以下数据转换为LaTeX表格格式：
+		
+		[数据内容]
+	\end{verbatim}
+	
+	\textbf{使用过程：} 将数据输入AI工具，获取LaTeX表格代码模板后，由参赛队成员根据实际数据进行校对和修正。
+	
+	\section*{四、对AI输出的采纳、人工修改和核验的主要情况}
+	
+	\begin{table}[H]
+		\centering
+		\begin{tabular}{c|c|c|c}
+			\hline
+			\textbf{使用环节} & \textbf{AI输出内容} & \textbf{采纳比例} & \textbf{人工修改与核验情况} \\
+			\hline
+			语言润色 & 语法优化建议 & 约60\% & 逐句审查，保留合理改进，拒绝改变原意的建议 \\
+			代码调试 & 错误定位与修改思路 & 约40\% & 参考思路后人工重写代码，未直接复制AI输出 \\
+			LaTeX排版 & 表格与公式代码模板 & 约70\% & 校对数据准确性，修正格式错误 \\
+			\hline
+		\end{tabular}
+	\end{table}
+	
+	\subsection*{核验说明}
+	
+	\begin{enumerate}
+		\item \textbf{语言润色：} 所有AI提出的语言修改建议均经参赛队成员逐句审查，仅采纳不改变原意、提升表达规范性的建议，确保论文的学术准确性。
+		\item \textbf{代码调试：} AI工具在代码调试过程中提供的建议仅供参考，所有最终使用的代码均由参赛队成员手动编写、测试并验证，确保程序运行结果与论文内容一致。
+		\item \textbf{LaTeX排版：} AI工具生成的表格和公式模板，均经参赛队成员根据实际数据进行校对和修正，确保数据准确性和格式规范性。
+	\end{enumerate}
+	
+	\section*{五、总结声明}
+	
+	本参赛队在使用AI工具过程中，始终坚持以下原则：
+	
+	\begin{enumerate}
+		\item \textbf{透明性：} 如实记录所有AI工具的使用情况。
+		\item \textbf{主导性：} 核心建模与分析的思路、方法选择、模型构建及结论推导均由参赛队独立完成。
+		\item \textbf{审查性：} 所有AI生成内容均经逐项人工审查与核实，未将未经核实的AI输出直接用于论文。
+	\end{enumerate}
+	
+	\vspace{1cm}
+	\noindent 参赛队成员签名：\hspace{3cm} 日期：\hspace{3cm}
+	
+\end{document}
