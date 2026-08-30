@@ -471,6 +471,82 @@ class FullDE:
             return True
         return False
 
+    # ---------- K=2 槽位预热（可选热启动：低维结构化搜索 → 全量编码种子） ----------
+    def _k2_warm(self, greedy_y, y, prev_sets, prev2_sets, problem, mode, dist, n_quad,
+                 npop=32, ngen=60, F_=F, CR_=CR):
+        """K=2 槽位编码 DE 预热：每(物理地块, 季次)至多 2 个作物槽，每槽 [u, α] 两维，
+        维度 D2 = 4 × 季数。用低维 K=2 搜索先拿到结构化好解，再编码为全量权重向量，
+        作为全量 DE 的热启动（solve 的 k2_warm=True 时调用）。
+
+        动机：历史对照中 K=2 槽位 DE（296 维）的 mode2 收益略高于全量 DE（6198.30 vs
+        6201.43）——低维槽位空间下 DE 的"换作物"探索更结构化。本预热器把该优势转化为
+        全量 DE 的起点：K=2 最优解 → _encode 全量向量 → 全量 DE 继续进化。"""
+        slots = [(p, s, list(self.sm.season_support[p][s]))
+                 for p in self.sm.plots for s in sorted(self.sm.season_support[p])]
+        D2 = 4 * len(slots)
+        rng = np.random.default_rng(self.seed * 1000 + y + 777)
+
+        def enc2(plan_y):
+            v = np.zeros(D2)
+            for bi, (p, s, sup) in enumerate(slots):
+                b = bi * 4
+                for k, (j, a) in enumerate(plan_y.get(p, {}).get(s, [])[:2]):
+                    if j in sup:
+                        v[b + 2 * k] = sup.index(j)
+                        v[b + 2 * k + 1] = min(a, 1.0)
+            return v
+
+        def dec2(v):
+            plan = defaultdict(lambda: defaultdict(list))
+            for bi, (p, s, sup) in enumerate(slots):
+                b = bi * 4
+                for k in range(2):
+                    u = int(np.clip(round(v[b + 2 * k]), 0, len(sup) - 1))
+                    a = float(np.clip(v[b + 2 * k + 1], 0.0, 1.0))
+                    if a > EPS:
+                        plan[p][s].append((sup[u], a))
+            out = {p: dict(ss) for p, ss in plan.items()}
+            for p in self.sm.plots:
+                out.setdefault(p, {})
+            return out
+
+        pop = np.zeros((npop, D2))
+        pop[0] = enc2(greedy_y)
+        for i in range(1, npop):                     # α 抖动 + 换作物槽（K=2 结构化邻域）
+            v = pop[0].copy()
+            for bi, (p, s, sup) in enumerate(slots):
+                b = bi * 4
+                if v[b + 1] > 0:
+                    v[b + 1] = float(np.clip(v[b + 1] + rng.uniform(-0.15, 0.15), 0.0, 1.0))
+                if v[b + 3] > 0:
+                    v[b + 3] = float(np.clip(v[b + 3] + rng.uniform(-0.15, 0.15), 0.0, 1.0))
+            for _ in range(int(rng.integers(1, 5))): # 随机换 1~4 个槽位的作物
+                bi = int(rng.integers(len(slots)))
+                b = bi * 4
+                k = int(rng.integers(2))
+                if v[b + 2 * k + 1] > 0.05:
+                    v[b + 2 * k] = rng.integers(len(slots[bi][2]))
+            pop[i] = v
+        fits = [self._fitness(dec2(pop[i]), y, prev_sets, prev2_sets,
+                              problem, mode, dist, n_quad) for i in range(npop)]
+        for _ in range(ngen):                        # DE/rand/1/bin
+            for i in range(npop):
+                a, b, c = rng.choice([j for j in range(npop) if j != i], 3, replace=False)
+                trial = pop[i].copy()
+                mask = rng.random(D2) < CR_
+                mask[rng.integers(D2)] = True
+                trial[mask] = (pop[a] + F_ * (pop[b] - pop[c]))[mask]
+                for bi, (p, s, sup) in enumerate(slots):   # 槽位边界投影
+                    b = bi * 4
+                    for k in range(2):
+                        trial[b + 2 * k] = float(np.clip(trial[b + 2 * k], 0, len(sup) - 1))
+                        trial[b + 2 * k + 1] = float(np.clip(trial[b + 2 * k + 1], 0.0, 1.0))
+                ft = self._fitness(dec2(trial), y, prev_sets, prev2_sets,
+                                   problem, mode, dist, n_quad)
+                if ft > fits[i]:
+                    pop[i], fits[i] = trial, ft
+        return dec2(pop[int(np.argmax(fits))])
+
     def _de_year(self, vec0, y, prev_sets, prev2_sets, problem, mode, dist, n_quad,
                  npop=NP, ngen=G, F_=F, CR_=CR):
         rng = np.random.default_rng(self.seed * 1000 + y)
@@ -601,9 +677,13 @@ class FullDE:
 
     # ---------- 主流程 ----------
     def solve(self, baseline=None, problem=1, mode=1, dist='normal',
-              n_quad=40, seed=None, npop=NP, ngen=G, verbose=True):
+              n_quad=40, seed=None, npop=NP, ngen=G, verbose=True, k2_warm=False):
         """逐年级进 DE 求解 2024~2030。返回 (plan, fit)。
-        最终收益计算前先做规则检查（2023 固定基线），违规收集并 raise。"""
+        最终收益计算前先做规则检查（2023 固定基线），违规收集并 raise。
+
+        k2_warm=True：每年先用 K=2 槽位 DE（_k2_warm，296 维低维空间）搜索得到结构化
+        好解，再 _encode 为全量 1062 维权重向量作为当年全量 DE 的热启动（"K=2 热启动 +
+        全量编码"路线，见 _k2_warm 动机注记）。"""
         if seed is not None:
             self.seed = seed
             self.rng = random.Random(self.seed)
@@ -616,9 +696,14 @@ class FullDE:
             prev = self.rc.crop_sets(greedy[y])
         prev = base_cs
         for y in YEARS:
-            vec0 = self._encode(greedy[y])
             p2 = base_cs if y - 2 == 2023 else (self.rc.crop_sets(plan[y - 2])
                                                 if y - 2 >= 2024 else {})
+            if k2_warm:
+                # K=2 槽位预热：低维结构化搜索 → 全量编码种子
+                k2_plan = self._k2_warm(greedy[y], y, prev, p2, problem, mode, dist, n_quad)
+                vec0 = self._encode(k2_plan)
+            else:
+                vec0 = self._encode(greedy[y])
             best, f = self._de_year(vec0, y, prev, p2, problem, mode, dist, n_quad,
                                     npop=npop, ngen=ngen)
             plan[y] = self._decode(best, y, prev)
@@ -660,14 +745,20 @@ if __name__ == '__main__':
     npop = int(sys.argv[1]) if len(sys.argv) > 1 else NP
     ngen = int(sys.argv[2]) if len(sys.argv) > 2 else G
     mode = int(sys.argv[3]) if len(sys.argv) > 3 else 1
+    warm = bool(int(sys.argv[4])) if len(sys.argv) > 4 else False
+    problem = int(sys.argv[5]) if len(sys.argv) > 5 else 1
+    n_quad = int(sys.argv[6]) if len(sys.argv) > 6 else 16
     base = load_2023_baseline()
 
-    print(f'全量分配编码变量数 D = {FullDE().D}')
+    print(f'全量分配编码变量数 D = {FullDE().D}   K=2 热启动 = {warm}   问题 = {problem}   n_quad={n_quad}')
     de = FullDE(seed=0)
-    plan, fit = de.solve(baseline=base, problem=1, mode=mode, npop=npop, ngen=ngen)
-    print(f'\nFullDE 问题1 mode{mode} 总适应度 = {fit/1e4:.2f} 万元')
+    plan, fit = de.solve(baseline=base, problem=problem, mode=mode, npop=npop, ngen=ngen,
+                         k2_warm=warm, n_quad=n_quad)
+    print(f'\nFullDE 问题{problem} mode{mode} 总适应度 = {fit/1e4:.2f} 万元')
     de.report(plan, mode=mode)
     # 检查优先兜底：收益已算，但方案必须通过检查器（违规即 raise）
     de.rc.raise_if_invalid(integrate({y: plan[y] for y in YEARS}, base=base), base=base)
-    print(f'规则检查（{npop}×{ngen}）：全部通过 ✓，方案已保存')
-    pickle.dump(plan, open(DATA / f'de_plan_full_mode{mode}.pkl', 'wb'))
+    print(f'规则检查（{npop}×{ngen}，K2预热={warm}）：全部通过 ✓，方案已保存')
+    tag = '_k2warm' if warm else ''
+    fname = f'de_plan_full_p{problem}_mode{mode}{tag}.pkl'
+    pickle.dump(plan, open(DATA / fname, 'wb'))
