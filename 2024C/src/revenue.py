@@ -241,7 +241,8 @@ class RevenueModel:
         Yb = (self.q * X).sum(axis=0)                   # [41] 基准产量 Ȳ_j
         PX = (self.p * self.q * X).sum(axis=0)          # [41] 基准产值 Σ_ts p·q·X
         C = float((self.c * X).sum()) * (1.05 ** u)     # 成本确定性年增 5%
-        A = np.where(Yb > 0, self.sales0 / Yb, 0.0)     # [41] 基准供需比
+        with np.errstate(divide='ignore', invalid='ignore'):
+            A = np.where(Yb > 0, self.sales0 / Yb, 0.0)     # [41] 基准供需比
         grow = np.zeros(len(self.crops), dtype=bool)
         grow[list(self.crop_idx[j] for j in GROW_SALES)] = True    # 小麦/玉米 复合增长
         kappa = 0.5 if mode == 2 else 0.0
@@ -263,13 +264,11 @@ class RevenueModel:
             xs, ws = self._quad(self.wave_sales[jc, 0] / 100.0,
                                 self.wave_sales[jc, 1] / 100.0, dist, n_quad)
             gj = (lambda v: (1 + v) ** u) if grow[jc] else (lambda v: 1 + v)
-            I = 0.0
-            for a, wa in zip(xq, wq):
-                den = 1 + a
-                for b, wb in zip(xs, ws):
-                    r = min(1.0, A[jc] * gj(b) / den)
-                    psi = r + kappa * (1.0 - r)         # 产值系数统一式
-                    I += den * psi * wa * wb
+            den = 1.0 + xq                                # (n_q,)
+            gb = gj(xs)                                   # (n_s,)
+            r = np.minimum(1.0, A[jc] * gb[None, :] / den[:, None])   # (n_q, n_s) 非滞销/总产比
+            psi = r + kappa * (1.0 - r)                   # 产值系数统一式
+            I = float((den[:, None] * psi * wq[:, None] * ws[None, :]).sum())
             E += PX[jc] * fp * I
         E -= C
         return E

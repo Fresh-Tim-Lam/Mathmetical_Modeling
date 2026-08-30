@@ -1,0 +1,41 @@
+[13:06:07.566] [render] currentFileDir=(root)  currentPath=收益计算与方案表示.md
+[13:06:07.575] [STAMP] mapped 284 blocks from 615 source lines
+[13:06:07.576] [F1] rendered 284 blocks in 6.7ms
+[13:06:17.538] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:06:17.546] [STAMP] mapped 323 blocks from 434 source lines
+[13:06:17.548] [F1] rendered 323 blocks in 5.7ms
+[13:06:17.548] [render] skip: already rendering → queue pending re-render
+[13:06:17.674] [render] re-run queued render
+[13:06:17.675] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:06:17.680] [STAMP] mapped 323 blocks from 434 source lines
+[13:06:17.683] [F1] rendered 323 blocks in 5.5ms
+[13:08:11.031] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:08:11.043] [STAMP] mapped 322 blocks from 433 source lines
+[13:08:11.045] [F1] rendered 322 blocks in 5.3ms
+[13:09:54.507] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:09:54.518] [STAMP] mapped 308 blocks from 419 source lines
+[13:09:54.525] [F1] rendered 308 blocks in 10.0ms
+[13:09:54.526] [render] skip: already rendering → queue pending re-render
+[13:09:54.613] [render] re-run queued render
+[13:09:54.613] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:09:54.627] [STAMP] mapped 308 blocks from 419 source lines
+[13:09:54.629] [F1] rendered 308 blocks in 10.0ms
+[13:10:00.554] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:10:00.564] [STAMP] mapped 296 blocks from 401 source lines
+[13:10:00.567] [F1] rendered 296 blocks in 5.3ms
+[13:10:00.567] [render] skip: already rendering → queue pending re-render
+[13:10:00.661] [render] re-run queued render
+[13:10:00.661] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:10:00.667] [STAMP] mapped 296 blocks from 401 source lines
+[13:10:00.669] [F1] rendered 296 blocks in 4.9ms
+[13:10:01.163] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:10:01.174] [STAMP] mapped 296 blocks from 401 source lines
+[13:10:01.176] [F1] rendered 296 blocks in 4.7ms
+[13:10:01.176] [render] skip: already rendering → queue pending re-render
+[13:10:01.242] [render] re-run queued render
+[13:10:01.242] [render] currentFileDir=(root)  currentPath=问题建模与求解.md
+[13:10:01.247] [STAMP] mapped 296 blocks from 401 source lines
+[13:10:01.249] [F1] rendered 296 blocks in 4.3ms
+[13:11:46.605] [MAP] selHighlight sel=none mathTotal=104 covered=0
+[13:11:47.556] [MAP] selHighlight sel=none mathTotal=104 covered=0
+[13:11:49.615] [MAP] selHighlight sel=none mathTotal=104 covered=0

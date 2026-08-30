@@ -1,0 +1,33 @@
+schema_version: 1
+updated_at: '2026-08-30T05:06:03.749460+00:00'
+files:
+- path: C题.md
+  md_mtime: 1788006812.8208952
+  md_size: 3883
+  md_sha256: 00d9bb353803c96648a5c0bbb3afa6ec3705e8700a0fbf3c48834c774bf29f10
+  sidecar_mtime: null
+  sidecar_sha256: null
+- path: deepseek_data-2026-08-30/数学建模2024C.md
+  md_mtime: 1788058104.6303897
+  md_size: 562283
+  md_sha256: f2025776bb36dd9427e1179446566346f98a18224917639d9c3f2120dca2a521
+  sidecar_mtime: null
+  sidecar_sha256: null
+- path: 对话.md
+  md_mtime: 1788057945.249182
+  md_size: 20725
+  md_sha256: 3219574a9d68f331a06a1657170d73400c91e0cc96d7f2f2e59dcc82eed7ad57
+  sidecar_mtime: null
+  sidecar_sha256: null
+- path: 收益计算与方案表示.md
+  md_mtime: 1788066132.0171773
+  md_size: 50315
+  md_sha256: d8105fc1d7a1867c213bc6a97f28187484529de3a6d0e4e4e0a14ca0c46c2cfd
+  sidecar_mtime: null
+  sidecar_sha256: null
+- path: 问题建模与求解.md
+  md_mtime: 1788066122.7557433
+  md_size: 28807
+  md_sha256: 6280ef221928a43528025f6a15ab0dcbb3a7726afd5ad161cb5adf469f03b118
+  sidecar_mtime: null
+  sidecar_sha256: null
