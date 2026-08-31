@@ -1,4 +1,4 @@
-This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.12) (preloaded format=xelatex 2026.8.7)  30 AUG 2026 23:57
+This is XeTeX, Version 3.141592653-2.6-0.999997 (MiKTeX 25.12) (preloaded format=xelatex 2026.8.7)  31 AUG 2026 09:05
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1135,38 +1135,23 @@ File: outputs/p2_expected_revenue.png Graphic file (type bmp)
 <outputs/p2_expected_revenue.png>
 File: outputs/p1_p2_utilization.png Graphic file (type bmp)
 <outputs/p1_p2_utilization.png>
-[14] [15] [16]
-Overfull \hbox (73.548pt too wide) in paragraph at lines 563--573
- [][] 
- []
-
-
-Overfull \hbox (160.188pt too wide) in paragraph at lines 583--598
- [][] 
- []
-
-[17]
+[14] [15] [16] [17]
 File: outputs/p1_vs_p2.png Graphic file (type bmp)
 <outputs/p1_vs_p2.png>
  [18]
-Overfull \hbox (11.58pt too wide) in paragraph at lines 628--640
+Overfull \hbox (11.58pt too wide) in paragraph at lines 632--644
  [][] 
  []
 
 [19] [20]
-Overfull \hbox (127.39337pt too wide) in paragraph at lines 716--724
- [][] 
- []
-
-
-Overfull \hbox (25.20227pt too wide) in paragraph at lines 726--727
+Overfull \hbox (25.20227pt too wide) in paragraph at lines 732--733
 []\TU/SimSun(0)/b/n/12 随 机 种 子 稳 健 性\TU/SimSun(0)/m/n/12 ：|  蒙 特 卡 洛 种 子 \TU/lm
 r/m/n/12 0/1/2 \TU/SimSun(0)/m/n/12 下 问 题 \TU/lmr/m/n/12 3 \TU/SimSun(0)/m/n/12
  期 望 收 益 分 别 为 \TU/lmr/m/n/12 4032.19/4032.81/4032.19
  []
 
 [21] [22]
-Overfull \hbox (13.17993pt too wide) in paragraph at lines 778--779
+Overfull \hbox (13.17993pt too wide) in paragraph at lines 784--785
 []\TU/lmr/m/n/12 Glasserman P. Monte Carlo Methods in Financial Engineering[M].
  New York: Springer,
  []
@@ -1175,27 +1160,27 @@ Overfull \hbox (13.17993pt too wide) in paragraph at lines 778--779
 File: lstlang1.sty 2025/11/14 1.11b listings language file
 )
 Package hyperref Info: bookmark level for unknown lstlisting defaults to 0 on i
-nput line 800.
+nput line 806.
  [25
 
 ] [26] [27] [28]
 [29] [30] [31] [32] [33] [34]
-Overfull \hbox (21.35374pt too wide) in paragraph at lines 1205--1206
+Overfull \hbox (21.35374pt too wide) in paragraph at lines 1211--1212
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]  
  []
 
 [35] [36] [37] [38]
-Overfull \hbox (17.26392pt too wide) in paragraph at lines 1363--1364
+Overfull \hbox (17.26392pt too wide) in paragraph at lines 1369--1370
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]  
  []
 
 [39] [40] [41] [42] [43] [44] [45]
-Overfull \hbox (9.05157pt too wide) in paragraph at lines 1622--1623
+Overfull \hbox (9.05157pt too wide) in paragraph at lines 1628--1629
 [][][][][][][][][][][][][][][][][][][][][][][][]  
  []
 
 [46] [47]
-Overfull \hbox (24.92938pt too wide) in paragraph at lines 1700--1701
+Overfull \hbox (24.92938pt too wide) in paragraph at lines 1706--1707
 [][][][][][][][][][][][][][][][][][][][][][][][][][][][][][][]  
  []
 
@@ -1208,11 +1193,11 @@ Package rerunfilecheck Info: File `paper.out' has not changed.
 (rerunfilecheck)             Checksum: 6F659F2ED5BDDAF9C2E1958D96221832;4427.
  ) 
 Here is how much of TeX's memory you used:
- 18863 strings out of 402987
- 397994 string characters out of 5455770
- 1123079 words of memory out of 5000000
- 47311 multiletter control sequences out of 15000+600000
- 638121 words of font info for 116 fonts, out of 8000000 for 9000
+ 18902 strings out of 402987
+ 399772 string characters out of 5455770
+ 1123443 words of memory out of 5000000
+ 47345 multiletter control sequences out of 15000+600000
+ 639207 words of font info for 125 fonts, out of 8000000 for 9000
  1348 hyphenation exceptions out of 8191
  93i,13n,111p,578b,1863s stack positions out of 10000i,1000n,20000p,200000b,200000s
 
