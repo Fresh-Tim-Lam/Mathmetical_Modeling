@@ -1,5 +1,5 @@
 schema_version: 1
-updated_at: '2026-08-31T07:18:32.349687+00:00'
+updated_at: '2026-08-31T07:18:26.089764+00:00'
 files:
 - path: C题.md
   md_mtime: 1788006812.8208952
@@ -26,9 +26,9 @@ files:
   sidecar_mtime: null
   sidecar_sha256: null
 - path: 问题3假设与文献.md
-  md_mtime: 1788160712.3425205
-  md_size: 18311
-  md_sha256: 38e966be1c66e9d47087f9f0ddfae5327977bae85ea2c672b341fd2eac35db0c
+  md_mtime: 1788160706.0852506
+  md_size: 18394
+  md_sha256: 2c584b3896952f5dbc7d3f33d50dd4673989b20538794937506c93b06997dc44
   sidecar_mtime: null
   sidecar_sha256: null
 - path: 问题建模与求解.md

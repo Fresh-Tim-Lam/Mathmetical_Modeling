@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>板凳龙 · 盘入模拟控制台（2024 A题）</title>
+<style>
+  :root{
+    --bg:#10151d; --panel:#1a2230; --line:#2c3850; --text:#dbe4f0; --accent:#4da3ff;
+    --accent2:#ff7a45;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:"Microsoft YaHei","PingFang SC",sans-serif; min-height:100vh;}
+  header{background:linear-gradient(90deg,#16202e,#1d2a3d); padding:10px 20px; border-bottom:1px solid var(--line);
+         display:flex; align-items:center; gap:14px;}
+  header h1{font-size:17px; font-weight:600;}
+  header .sub{font-size:12px; color:#8fa3bd;}
+  .wrap{display:flex; gap:14px; padding:14px; height:calc(100vh - 58px);}
+  .stage{flex:1; min-width:0; position:relative; border:1px solid var(--line); border-radius:8px; background:#0c1118;}
+  #cv{width:100%; height:100%; display:block;}
+  .panel{width:330px; flex:none; background:var(--panel); border:1px solid var(--line); border-radius:8px;
+         padding:14px; overflow-y:auto; display:flex; flex-direction:column; gap:12px; font-size:13px;}
+  .group{border:1px solid var(--line); border-radius:8px; padding:10px 12px; background:#141c28;}
+  .group h3{font-size:13px; color:var(--accent); margin-bottom:8px; font-weight:600;}
+  .ctl{margin-bottom:10px;}
+  .ctl label{display:flex; justify-content:space-between; font-size:12px; margin-bottom:3px;}
+  .ctl label span.val{color:var(--accent2); font-weight:600;}
+  input[type=range]{width:100%; accent-color:var(--accent);}
+  .btns{display:flex; gap:8px; flex-wrap:wrap;}
+  button{background:#22334d; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:7px 12px;
+         cursor:pointer; font-size:13px; flex:1;}
+  button:hover{background:#2b4062;}
+  button.play{background:var(--accent); color:#08131f; font-weight:700;}
+  .readout{display:grid; grid-template-columns:auto 1fr; gap:4px 10px; font-size:12px; line-height:1.7;}
+  .readout b{color:var(--accent); font-weight:600;}
+  .hint{font-size:11px; color:#7d91ab; line-height:1.6;}
+  #cv2{width:100%; height:110px; background:#0c1118; border:1px solid var(--line); border-radius:6px;}
+  .legend{display:flex; gap:14px; font-size:11px; color:#9db1c8; margin-top:4px; flex-wrap:wrap;}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:4px; vertical-align:-1px;}
+  #status{font-size:12px; color:#ffd166; min-height:18px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>🐉 板凳龙 · 盘入模拟控制台</h1>
+  <span class="sub">2024 高教社杯 A题 · 阿基米德螺线 + 刚性板凳链 | 拖动滑块实时控制</span>
+</header>
+
+<div class="wrap">
+  <div class="stage">
+    <canvas id="cv"></canvas>
+  </div>
+
+  <div class="panel">
+    <div class="group">
+      <h3>螺线参数（改动即重置）</h3>
+      <div class="ctl"><label>螺距 h <span class="val" id="vH">0.55 m</span></label>
+        <input type="range" id="h" min="0.20" max="2.00" step="0.05" value="0.55"></div>
+      <div class="ctl"><label>龙头速度 v <span class="val" id="vV">1.0 m/s</span></label>
+        <input type="range" id="v" min="0.2" max="2.0" step="0.1" value="1.0"></div>
+      <div class="ctl"><label>初始圈数 n <span class="val" id="vN">16</span></label>
+        <input type="range" id="n" min="2" max="30" step="1" value="16"></div>
+    </div>
+
+    <div class="group">
+      <h3>时间控制</h3>
+      <div class="ctl"><label>时间 t <span class="val" id="vT">0.0 s</span></label>
+        <input type="range" id="t" min="0" max="600" step="0.1" value="0"></div>
+      <div class="btns">
+        <button id="playBtn" class="play">▶ 播放</button>
+        <button id="stepBtn">+1s</button>
+        <button id="resetBtn">重置</button>
+      </div>
+      <div class="ctl" style="margin-top:8px;"><label>播放速度 <span class="val" id="vSpd">1×</span></label>
+        <input type="range" id="spd" min="1" max="8" step="1" value="1"></div>
+    </div>
+
+    <div class="group">
+      <h3>显示选项</h3>
+      <label style="display:block; margin-bottom:6px;"><input type="checkbox" id="shSpiral" checked> 显示螺线</label>
+      <label style="display:block; margin-bottom:6px;"><input type="checkbox" id="shBoard" checked> 板凳画成30cm宽板</label>
+      <label style="display:block; margin-bottom:6px;"><input type="checkbox" id="shAnchors" checked> 显示锚点（孔）</label>
+      <label style="display:block; margin-bottom:8px;"><input type="checkbox" id="follow"> 跟随龙头</label>
+      <button id="resetViewBtn">↺ 重置视图（原点全景）</button>
+      <div class="hint" style="margin-top:8px;">滚轮缩放 · 拖拽平移（跟随龙头时锁定）</div>
+    </div>
+
+    <div class="group">
+      <h3>实时数据</h3>
+      <div class="readout" id="ro"></div>
+      <div id="status" style="margin-top:6px;"></div>
+    </div>
+
+    <div class="group">
+      <h3>各把手速度分布</h3>
+      <canvas id="cv2"></canvas>
+      <div class="legend">
+        <span><i style="background:#ff7a45;"></i>龙头</span>
+        <span><i style="background:#4da3ff;"></i>龙身</span>
+        <span><i style="background:#5ee08a;"></i>龙尾</span>
+        <span>虚线 = 龙头速度</span>
+      </div>
+      <div class="hint" style="margin-top:6px;">红线：非相邻板凳接触时标记为碰撞</div>
+    </div>
+  </div>
+</div>
+
+<script>
+"use strict";
+// ================== 参数与状态 ==================
+const N = 224;                 // 把手总数
+const L_HEAD = 2.86, L_BODY = 1.65;
+const LINKS = [L_HEAD];
+for (let i = 1; i < N; i++) LINKS.push(L_BODY);
+// 板凳真实几何：板长 / 板宽 / 锚点（孔）距板端
+const BENCH = {
+  head: { len: 3.41, w: 0.30, inset: 0.275 },
+  body: { len: 2.20, w: 0.30, inset: 0.275 }
+};
+const COLLIDE_GAP = 1e-6;      // 碰撞判据：板接触/干涉
+let h = 0.55, vel = 1.0, turns = 16;   // 螺距/速度/圈数
+let t = 0;
+let playing = false, animId = null, lastTs = 0, speedMult = 1;
+
+// 连续播放时用上一帧极角做热启动
+let prevTheta = null;
+
+// ================== 螺线几何 ==================
+let a = h / (2 * Math.PI);   // r = a*theta
+
+function setSpiral(hh){ h = hh; a = h / (2 * Math.PI); }
+
+function P(th){ const r = a * th; return [r * Math.cos(th), r * Math.sin(th)]; }
+function dP(th){ const r = a * th;
+  return [a * Math.cos(th) - r * Math.sin(th), a * Math.sin(th) + r * Math.cos(th)]; }
+function arc(th){ const t = th;
+  return a / 2 * (t * Math.sqrt(t * t + 1) + Math.asinh(t)); }
+function thetaFromArc(s){
+  let t = s / a;                       // 牛顿迭代
+  for (let i = 0; i < 60; i++){
+    const f = arc(t) - s;
+    if (Math.abs(f) < 1e-12) break;
+    t -= f / (a * Math.sqrt(t * t + 1));
+    if (t < 0) t = 0;
+  }
+  return t;
+}
+function chord(t1, t2){ const p = P(t1), q = P(t2);
+  return Math.hypot(q[0]-p[0], q[1]-p[1]); }
+
+// 求下一个把手极角：|P(prev+d)-P(prev)| = L，牛顿，guess 热启动
+function nextTheta(prev, L, guess){
+  let d = guess - prev;
+  if (d <= 0) d = L / (a * prev + 1e-9);
+  for (let i = 0; i < 25; i++){
+    const p0 = P(prev), p1 = P(prev + d);
+    const n = Math.hypot(p1[0]-p0[0], p1[1]-p0[1]);
+    const f = n - L;
+    if (Math.abs(f) < 1e-12) break;
+    const dp = dP(prev + d);
+    const df = ((p1[0]-p0[0])*dp[0] + (p1[1]-p0[1])*dp[1]) / n;
+    if (Math.abs(df) < 1e-15) break;
+    d -= f / df;
+    if (d <= 0) d = L / (a * prev + 1e-9);
+  }
+  return prev + d;
+}
+
+// 整条龙：theta[0..223]
+function chain(theta0, warm){
+  const th = new Array(N);
+  th[0] = theta0;
+  for (let k = 1; k < N; k++){
+    const guess = (warm && warm[k] !== undefined) ? warm[k] : th[k-1];
+    th[k] = nextTheta(th[k-1], LINKS[k-1], guess);
+  }
+  return th;
+}
+
+// 速度：解析隐式求导
+function speeds(th, dth0){
+  const Pn = new Array(N), dPn = new Array(N);
+  for (let k = 0; k < N; k++){ Pn[k] = P(th[k]); dPn[k] = dP(th[k]); }
+  const w = new Array(N); w[0] = dth0;
+  for (let k = 1; k < N; k++){
+    const dx = Pn[k][0]-Pn[k-1][0], dy = Pn[k][1]-Pn[k-1][1];
+    w[k] = w[k-1] * (dx*dPn[k-1][0] + dy*dPn[k-1][1]) / (dx*dPn[k][0] + dy*dPn[k][1]);
+  }
+  const v = new Array(N);
+  for (let k = 0; k < N; k++) v[k] = Math.hypot(dPn[k][0], dPn[k][1]) * Math.abs(w[k]);
+  return v;
+}
+
+// ================== 真实板凳几何 ==================
+// 每节板：中心 = 两锚点中点；沿锚点连线向两端各延伸 inset；宽 = w
+function boardGeom(i, Pos){
+  const spec = i === 0 ? BENCH.head : BENCH.body;
+  const p1 = Pos[i], p2 = Pos[i+1];
+  const dx = p2[0]-p1[0], dy = p2[1]-p1[1];
+  const len = Math.hypot(dx, dy) || 1e-9;
+  const ux = dx/len, uy = dy/len, nx = -uy, ny = ux;
+  const cx = (p1[0]+p2[0])/2, cy = (p1[1]+p2[1])/2;
+  const hl = spec.len/2, hw = spec.w/2;
+  return [[cx+hl*ux+hw*nx, cy+hl*uy+hw*ny],
+          [cx+hl*ux-hw*nx, cy+hl*uy-hw*ny],
+          [cx-hl*ux-hw*nx, cy-hl*uy-hw*ny],
+          [cx-hl*ux+hw*nx, cy-hl*uy+hw*ny]];
+}
+
+// 线段-线段最小距离（相交为 0）
+function segDist(p1, p2, p3, p4){
+  const cross = (o,a,b) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+  const onSeg = (o,a,b) => Math.min(a[0],b[0])-1e-12<=o[0] && o[0]<=Math.max(a[0],b[0])+1e-12 &&
+                          Math.min(a[1],b[1])-1e-12<=o[1] && o[1]<=Math.max(a[1],b[1])+1e-12;
+  const d1=cross(p3,p4,p1), d2=cross(p3,p4,p2), d3=cross(p1,p2,p3), d4=cross(p1,p2,p4);
+  if (((d1>0&&d2<0)||(d1<0&&d2>0)) && ((d3>0&&d4<0)||(d3<0&&d4>0))) return 0;
+  for (const [o,a,b] of [[p1,p3,p4],[p2,p3,p4],[p3,p1,p2],[p4,p1,p2]])
+    if (Math.abs(cross(a,b,o)) < 1e-12 && onSeg(o,a,b)) return 0;
+  const ptSeg = (pt,a,b) => {
+    const ux=b[0]-a[0], uy=b[1]-a[1], L2=ux*ux+uy*uy;
+    const tt = L2===0 ? 0 : Math.max(0, Math.min(1, ((pt[0]-a[0])*ux+(pt[1]-a[1])*uy)/L2));
+    return Math.hypot(pt[0]-(a[0]+tt*ux), pt[1]-(a[1]+tt*uy));
+  };
+  return Math.min(ptSeg(p1,p3,p4), ptSeg(p2,p3,p4), ptSeg(p3,p1,p2), ptSeg(p4,p1,p2));
+}
+// 两矩形最小距离 = 16 对边线段距离
+function polyDist(A, B){
+  let best = Infinity;
+  for (let i=0;i<4;i++){
+    const a1=A[i], a2=A[(i+1)%4];
+    for (let j=0;j<4;j++){
+      const d = segDist(a1, a2, B[j], B[(j+1)%4]);
+      if (d < best) best = d;
+    }
+  }
+  return best;
+}
+// 返回 (最小非相邻板间距, 碰撞板对索引, 命中数组)
+function collisionInfo(Pos){
+  const nb = N - 1;
+  const geoms = new Array(nb), cxs = new Array(nb), cys = new Array(nb), cth = new Array(nb);
+  for (let i=0;i<nb;i++){
+    geoms[i] = boardGeom(i, Pos);
+    cxs[i] = (geoms[i][0][0]+geoms[i][1][0]+geoms[i][2][0]+geoms[i][3][0])/4;
+    cys[i] = (geoms[i][0][1]+geoms[i][1][1]+geoms[i][2][1]+geoms[i][3][1])/4;
+    cth[i] = (Thetas[i] + Thetas[i+1]) / 2;
+  }
+  let dmin = Infinity, ip = -1, jp = -1;
+  const hit = new Array(nb).fill(false);
+  for (let i=0;i<nb;i++)
+    for (let j=i+2;j<nb;j++){
+      // 极角对齐筛选：相邻圈板对极角差为 2π 整数倍（同径向方向才可能接近）
+      const dth = Math.abs(cth[i] - cth[j]);
+      const wrap = dth % (2*Math.PI);
+      const resid = Math.min(wrap, 2*Math.PI - wrap);
+      if (resid > 0.8) continue;
+      // 中心距粗筛
+      const dc = Math.hypot(cxs[i]-cxs[j], cys[i]-cys[j]);
+      if (dc > dmin + 3.5) continue;
+      const d = polyDist(geoms[i], geoms[j]);
+      if (d < dmin){ dmin = d; ip = i; jp = j; }
+      if (d < COLLIDE_GAP){ hit[i] = true; hit[j] = true; }
+    }
+  return { dmin, ip, jp, hit };
+}
+
+// ================== 状态求解 ==================
+let s0 = 0, th0 = 0, Thetas = null, Pos = null, Vels = null;
+
+function solveState(){
+  const s = Math.max(s0 - vel * t, 0);
+  th0 = thetaFromArc(s);
+  Thetas = chain(th0, prevTheta);
+  prevTheta = Thetas;
+  Pos = new Array(N);
+  for (let k = 0; k < N; k++) Pos[k] = P(Thetas[k]);
+  const dth0 = -vel / Math.hypot(...dP(th0));
+  Vels = speeds(Thetas, dth0);
+}
+function resetState(){
+  s0 = arc(turns * 2 * Math.PI);
+  prevTheta = null;
+  solveState();
+}
+
+// ================== 绘制 ==================
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+const cv2 = document.getElementById('cv2'), ctx2 = cv2.getContext('2d');
+let W=0, H=0;
+
+function resize(){
+  W = cv.clientWidth; H = cv.clientHeight;
+  cv.width = W * devicePixelRatio; cv.height = H * devicePixelRatio;
+  ctx.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+}
+window.addEventListener('resize', resize); resize();
+
+// 世界->屏幕变换。view 记录视口中心 (cx,cy) 与半宽 half（米），可缩放/平移
+let SX=1, SY=0, scale=1;
+let view = { cx: 0, cy: 0, half: 11.3 };
+function resetView(){
+  const R = a * (turns * 2 * Math.PI);      // 龙头初始半径 = 螺线最大半径
+  view = { cx: 0, cy: 0, half: Math.max(R, 3) + 2.5 };
+  render();
+}
+function viewPort(){
+  let x0,y0,x1,y1;
+  if (document.getElementById('follow').checked){
+    const hx = Pos[0][0], hy = Pos[0][1], r0 = Math.hypot(hx,hy);
+    const half = Math.max(4.0, r0 + 7);
+    x0 = hx-half; x1 = hx+half; y0 = hy-half; y1 = hy+half;
+  } else {
+    x0 = view.cx - view.half; x1 = view.cx + view.half;
+    y0 = view.cy - view.half; y1 = view.cy + view.half;
+  }
+  scale = Math.min(W/(x1-x0), H/(y1-y0));
+  SX = W/2 - scale*(x0+x1)/2;
+  SY = H/2 - scale*(y0+y1)/2;
+}
+function w2s(x,y){ return [SX + scale*x, SY - scale*y]; }
+
+// 滚轮缩放（围绕鼠标位置）与拖拽平移
+function applyZoom(factor, mx, my){
+  if (document.getElementById('follow').checked) return;   // 跟随龙头时锁定
+  // 鼠标处的世界坐标
+  const wx = view.cx + (mx - W/2)/scale;
+  const wy = view.cy - (my - H/2)/scale;
+  view.half = Math.max(0.2, Math.min(2000, view.half * factor));
+  scale = Math.min(W, H) / (2 * view.half);
+  view.cx = wx - (mx - W/2)/scale;
+  view.cy = wy + (my - H/2)/scale;
+  render();
+}
+let dragging = false, lastMX = 0, lastMY = 0;
+cv.addEventListener('wheel', e => {
+  e.preventDefault();
+  const r = cv.getBoundingClientRect();
+  applyZoom(e.deltaY > 0 ? 1.22 : 0.82, e.clientX - r.left, e.clientY - r.top);
+}, { passive: false });
+cv.addEventListener('mousedown', e => {
+  dragging = true;
+  lastMX = e.clientX; lastMY = e.clientY;
+  cv.style.cursor = 'grabbing';
+});
+window.addEventListener('mousemove', e => {
+  if (!dragging || document.getElementById('follow').checked) return;
+  const dx = e.clientX - lastMX, dy = e.clientY - lastMY;
+  lastMX = e.clientX; lastMY = e.clientY;
+  view.cx -= dx / scale;
+  view.cy += dy / scale;
+  render();
+});
+window.addEventListener('mouseup', () => { dragging = false; cv.style.cursor = ''; });
+document.getElementById('resetViewBtn').onclick = resetView;
+
+function drawSpiral(){
+  const s = Math.max(s0 - vel*t, 0);
+  const tmax = thetaFromArc(s) + turns*2*Math.PI + 3*2*Math.PI;
+  ctx.strokeStyle = 'rgba(120,150,190,0.35)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  const STEPS = 6000;
+  for (let i = 0; i <= STEPS; i++){
+    const th = tmax * i / STEPS;
+    const [x,y] = w2s(...P(th));
+    if (i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  }
+  ctx.stroke();
+  const [cx,cy] = w2s(0,0);
+  ctx.strokeStyle = '#f5f5f5'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.moveTo(cx-6,cy); ctx.lineTo(cx+6,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy-6); ctx.lineTo(cx,cy+6); ctx.stroke();
+}
+
+// 板凳画成真实长宽矩形（板头/板尾含伸出段，锚点为孔）
+function drawBoard(i, color, hit){
+  const v = boardGeom(i, Pos).map(p => w2s(p[0], p[1]));
+  ctx.beginPath();
+  ctx.moveTo(v[0][0], v[0][1]);
+  for (let k = 1; k < 4; k++) ctx.lineTo(v[k][0], v[k][1]);
+  ctx.closePath();
+  ctx.fillStyle = hit ? 'rgba(255,60,60,0.9)' : color;
+  ctx.fill();
+  ctx.strokeStyle = hit ? '#ff2d2d' : 'rgba(255,255,255,0.25)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+}
+// 锚点（孔）—— 连接销所在位置，画成小圆环
+function drawAnchors(){
+  for (let k = 0; k < N; k++){
+    const [x, y] = w2s(Pos[k][0], Pos[k][1]);
+    ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7);
+    ctx.fillStyle = '#0c1118'; ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,0.85)'; ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+}
+
+function render(){
+  ctx.clearRect(0,0,W,H);
+  viewPort();
+  if (document.getElementById('shSpiral').checked) drawSpiral();
+
+  // 碰撞信息（每帧计算）
+  const info = collisionInfo(Pos);
+
+  // 板凳
+  for (let i = 0; i < N-1; i++){
+    let color;
+    if (i===0) color = 'rgba(255,122,69,0.75)';           // 龙头（橙）
+    else if (i === N-2) color = 'rgba(94,224,138,0.75)';  // 龙尾（绿）
+    else color = 'rgba(77,163,255,0.62)';                 // 龙身（蓝）
+    if (document.getElementById('shBoard').checked)
+      drawBoard(i, color, info.hit[i]);
+    else {
+      const [x1,y1]=w2s(Pos[i][0],Pos[i][1]), [x2,y2]=w2s(Pos[i+1][0],Pos[i+1][1]);
+      ctx.strokeStyle = info.hit[i] ? '#ff3c3c' : color; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+    }
+  }
+  // 锚点（孔）
+  if (document.getElementById('shAnchors').checked) drawAnchors();
+  // 龙头 / 龙尾后 标记
+  let [hx,hy] = w2s(Pos[0][0],Pos[0][1]);
+  ctx.fillStyle='#ff4d4d'; ctx.beginPath(); ctx.arc(hx,hy,7,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+  let [tx,ty] = w2s(Pos[N-1][0],Pos[N-1][1]);
+  ctx.fillStyle='#5ee08a'; ctx.beginPath(); ctx.arc(tx,ty,6,0,7); ctx.fill();
+  ctx.strokeStyle='#fff'; ctx.lineWidth=2; ctx.stroke();
+
+  // 图例文本
+  ctx.fillStyle = 'rgba(255,255,255,0.85)'; ctx.font = '13px "Microsoft YaHei"';
+  ctx.fillText('● 龙头前把手', 12, 22);
+  ctx.fillText('■ 龙尾后把手', 12, 42);
+  ctx.fillText(`t=${t.toFixed(1)}s`, W-110, 22);
+
+  // 数据面板
+  document.getElementById('vT').textContent = t.toFixed(1) + ' s';
+  document.getElementById('ro').innerHTML =
+    `龙头位置<b>(${Pos[0][0].toFixed(3)}, ${Pos[0][1].toFixed(3)})</b>` +
+    `龙头半径<b>${Math.hypot(Pos[0][0],Pos[0][1]).toFixed(3)} m</b>` +
+    `龙头速度<b>${Vels[0].toFixed(4)} m/s</b>` +
+    `最大把手速度<b>${Math.max(...Vels).toFixed(4)} m/s</b>` +
+    `最小非相邻间距<b>${info.dmin.toFixed(4)} m</b>`;
+  const st = document.getElementById('status');
+  if (s0 - vel*t <= 0) st.textContent = '⚠ 龙头已盘入到螺线中心';
+  else if (info.dmin < COLLIDE_GAP) st.textContent = '⚠ 发生碰撞！' +
+      `（第${info.ip+1}节 与 第${info.jp+1}节，间距 ${info.dmin.toFixed(4)}m）`;
+  else st.textContent = '运行正常';
+
+  drawSpeedProfile();
+}
+
+function drawSpeedProfile(){
+  const w = cv2.clientWidth, ht = cv2.clientHeight;
+  cv2.width = w * devicePixelRatio; cv2.height = ht * devicePixelRatio;
+  ctx2.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  ctx2.clearRect(0,0,w,ht);
+  const maxV = Math.max(...Vels, vel*1.05);
+  ctx2.strokeStyle='rgba(77,163,255,0.9)'; ctx2.lineWidth=1.5; ctx2.beginPath();
+  for (let k=0;k<N;k++){
+    const x = k/(N-1)*w, y = ht - Vels[k]/maxV*(ht-8) - 4;
+    if (k===0) ctx2.moveTo(x,y); else ctx2.lineTo(x,y);
+  }
+  ctx2.stroke();
+  // 龙头速度虚线
+  ctx2.strokeStyle='rgba(255,122,69,0.8)'; ctx2.setLineDash([4,4]); ctx2.beginPath();
+  const y0 = ht - vel/maxV*(ht-8) - 4;
+  ctx2.moveTo(0,y0); ctx2.lineTo(w,y0); ctx2.stroke(); ctx2.setLineDash([]);
+  ctx2.fillStyle='#9db1c8'; ctx2.font='10px "Microsoft YaHei"';
+  ctx2.fillText('0',2,ht-2); ctx2.fillText('223',w-28,ht-2);
+  ctx2.fillText('把手编号 →', w/2-30, ht-2);
+}
+
+// ================== 动画循环 ==================
+function frame(ts){
+  if (playing){
+    if (lastTs){ const dt = (ts - lastTs)/1000 * speedMult;
+      t += dt; if (t > 600) t = 600;
+      solveState();
+    }
+    lastTs = ts;
+    render();
+    animId = requestAnimationFrame(frame);
+  } else lastTs = 0;
+}
+
+// ================== 控件事件 ==================
+const $ = id => document.getElementById(id);
+$('h').oninput = e => { h = parseFloat(e.target.value); $('vH').textContent = h.toFixed(2)+' m';
+  setSpiral(h); t = 0; $('t').value = 0; resetState(); resetView(); };
+$('v').oninput = e => { vel = parseFloat(e.target.value); $('vV').textContent = vel.toFixed(1)+' m/s';
+  resetState(); render(); };
+$('n').oninput = e => { turns = parseInt(e.target.value); $('vN').textContent = turns;
+  t = 0; $('t').value = 0; resetState(); resetView(); };
+$('t').oninput = e => { t = parseFloat(e.target.value); prevTheta = null; solveState(); render(); };
+$('spd').oninput = e => { speedMult = parseInt(e.target.value); $('vSpd').textContent = speedMult+'×'; };
+$('playBtn').onclick = () => { playing = !playing;
+  $('playBtn').textContent = playing ? '⏸ 暂停' : '▶ 播放';
+  if (playing){ lastTs = 0; animId = requestAnimationFrame(frame); }
+};
+$('stepBtn').onclick = () => { t = Math.min(t + 1, 600); $('t').value = t;
+  prevTheta = null; solveState(); render(); };
+$('resetBtn').onclick = () => { t = 0; $('t').value = 0; resetState(); render(); };
+['shSpiral','shBoard','shAnchors','follow'].forEach(id => $(id).onchange = render);
+
+// ================== 启动 ==================
+resetState();
+resetView();   // 依据当前参数计算原点全景视图（内部已 render）
+</script>
+</body>
+</html>

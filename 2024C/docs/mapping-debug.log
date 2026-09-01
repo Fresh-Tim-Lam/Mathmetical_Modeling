@@ -250,3 +250,78 @@
 [22:19:00.748] [render] currentFileDir=(root)  currentPath=收益计算与方案表示.md
 [22:19:00.759] [STAMP] mapped 284 blocks from 615 source lines
 [22:19:00.763] [F1] rendered 284 blocks in 7.0ms
+[15:14:25.411] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:14:25.418] [STAMP] mapped 170 blocks from 242 source lines
+[15:14:25.418] [F1] rendered 170 blocks in 6.0ms
+[15:14:26.738] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:26.818] [CTX] SRC L7 C0 [|·|]
+[15:14:26.818] [CTX] PV  blk3 C0 [|·|]
+[15:14:26.818] [EH] click: L7 C0 (block 3)
+[15:14:32.022] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:32.094] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:14:32.103] [STAMP] mapped 171 blocks from 243 source lines
+[15:14:32.106] [F1] rendered 171 blocks in 5.0ms
+[15:14:47.703] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:14:47.712] [STAMP] mapped 171 blocks from 243 source lines
+[15:14:47.714] [F1] rendered 171 blocks in 4.7ms
+[15:14:51.530] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.671] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.680] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.688] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.696] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.705] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.721] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.746] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.755] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.796] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.872] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:51.896] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.296] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.305] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.313] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.321] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.329] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.338] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.346] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:52.363] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:54.980] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:55.063] [EH] enterBlockEditMode: image block 4 line 8 attrs={}
+[15:14:55.572] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:55.634] [CTX] SRC L8 C71 [18.png>)|·|]
+[15:14:55.634] [CTX] PV  blk4 C22 [9 173018|·|]
+[15:14:55.634] [EH] click:image: L8 C71 (block 4)
+[15:14:55.640] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:14:56.996] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:14:57.008] [STAMP] mapped 170 blocks from 242 source lines
+[15:14:57.010] [F1] rendered 170 blocks in 3.9ms
+[15:18:10.051] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:10.096] [CTX] SRC L7 C0 [|·|]
+[15:18:10.096] [CTX] PV  blk3 C0 [|·|]
+[15:18:10.096] [EH] click: L7 C0 (block 3)
+[15:18:17.473] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:17.543] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:18:17.553] [STAMP] mapped 171 blocks from 243 source lines
+[15:18:17.555] [F1] rendered 171 blocks in 5.4ms
+[15:18:22.101] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:23.017] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:23.093] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:18:23.100] [STAMP] mapped 171 blocks from 243 source lines
+[15:18:23.102] [F1] rendered 171 blocks in 4.1ms
+[15:18:24.242] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:24.592] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:24.659] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:18:24.668] [STAMP] mapped 171 blocks from 243 source lines
+[15:18:24.670] [F1] rendered 171 blocks in 4.6ms
+[15:18:27.351] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:18:27.358] [STAMP] mapped 171 blocks from 243 source lines
+[15:18:27.361] [F1] rendered 171 blocks in 4.3ms
+[15:18:27.361] [render] skip: already rendering → queue pending re-render
+[15:18:27.401] [render] re-run queued render
+[15:18:27.401] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:18:27.405] [STAMP] mapped 171 blocks from 243 source lines
+[15:18:27.407] [F1] rendered 171 blocks in 4.1ms
+[15:18:29.148] [EH] enterBlockEditMode: image block 4 line 8 attrs={}
+[15:18:29.992] [MAP] selHighlight sel=none mathTotal=42 covered=0
+[15:18:30.774] [render] currentFileDir=(root)  currentPath=问题3假设与文献.md
+[15:18:30.784] [STAMP] mapped 170 blocks from 242 source lines
+[15:18:30.787] [F1] rendered 170 blocks in 5.1ms
